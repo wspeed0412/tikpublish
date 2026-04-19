@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TikPublish</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0a0f;--surface:#111118;--s2:#1a1a26;--s3:#22223a;
+  --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.13);
+  --tt:#ff0050;
+  --text:#f0eeff;--muted:rgba(240,238,255,0.45);
+  --ok:#3ecf8e;--warn:#f5a623;--r:14px;--rs:8px;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:grid;grid-template-columns:220px 1fr;grid-template-rows:auto 1fr}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-thumb{background:var(--s3);border-radius:2px}
+
+/* ── Sidebar ── */
+aside{grid-row:1/3;background:var(--surface);border-right:1px solid var(--border);padding:24px 18px;display:flex;flex-direction:column;gap:5px;overflow-y:auto}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;padding:0 8px 22px;display:flex;align-items:center;gap:10px}
+.logo-icon{width:30px;height:30px;background:var(--tt);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.95rem}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:var(--rs);font-size:.86rem;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif;transition:all .15s}
+.nav-item:hover{background:var(--s2);color:var(--text)}
+.nav-item.active{background:rgba(255,0,80,.12);color:var(--tt)}
+.nav-icon{font-size:1rem;width:18px;text-align:center}
+.nav-sec{font-size:.68rem;font-weight:600;letter-spacing:1.4px;text-transform:uppercase;color:var(--muted);padding:14px 11px 5px}
+.pill{margin-left:auto;background:var(--tt);color:#fff;border-radius:100px;padding:1px 7px;font-size:.68rem;font-weight:700}
+.acct-badge{margin-top:auto;background:var(--s2);border-radius:var(--rs);padding:11px;display:flex;align-items:center;gap:10px}
+.acct-av{width:30px;height:30px;background:var(--tt);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.78rem;font-weight:700;flex-shrink:0}
+
+/* ── Header ── */
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;justify-content:space-between}
+.htitle{font-family:'Syne',sans-serif;font-weight:700;font-size:1.05rem}
+.hsub{font-size:.78rem;color:var(--muted);margin-top:1px}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:var(--rs);font-size:.83rem;font-weight:500;cursor:pointer;border:none;transition:all .15s;font-family:'DM Sans',sans-serif}
+.btn-p{background:var(--tt);color:#fff}.btn-p:hover{background:var(--tt2);transform:translateY(-1px)}
+.btn-s{background:var(--s2);color:var(--text);border:1px solid var(--border)}.btn-s:hover{background:var(--s3)}
+.btn-d{background:rgba(255,0,80,.1);color:var(--tt);border:1px solid rgba(255,0,80,.3)}
+.btn-sm{padding:5px 11px;font-size:.76rem}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+
+/* ── Layout ── */
+main{padding:24px 28px;overflow-y:auto;display:flex;flex-direction:column;gap:20px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
+.ph{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.pt{font-family:'Syne',sans-serif;font-size:.88rem;font-weight:700}
+.pb{padding:20px}
+.fg{margin-bottom:14px}
+label.L{display:block;font-size:.72rem;font-weight:600;color:var(--muted);margin-bottom:6px;letter-spacing:.3px;text-transform:uppercase}
+input[type=text],input[type=password],input[type=datetime-local],textarea,select{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);padding:9px 13px;font-size:.86rem;font-family:'DM Sans',sans-serif;outline:none;transition:border-color .15s}
+input:focus,textarea:focus,select:focus{border-color:var(--tt)}
+textarea{resize:vertical;min-height:80px;line-height:1.5}
+select option{background:var(--s2)}
+
+/* ── Upload zone ── */
+.zone{border:2px dashed var(--border);border-radius:var(--r);padding:32px;text-align:center;cursor:pointer;transition:all .2s;position:relative}
+.zone:hover,.zone.over{border-color:var(--tt);background:rgba(255,0,80,.04)}
+.zone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+
+/* ── Progress ── */
+.pbar{height:4px;background:var(--s2);border-radius:2px;overflow:hidden;margin-top:8px}
+.pfill{height:100%;background:var(--tt);border-radius:2px;transition:width .3s}
+
+/* ── Spinner ── */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{width:13px;height:13px;border:2px solid rgba(255,255,255,.25);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0}
+
+/* ── Bulk list ── */
+.bulk-item{border-bottom:1px solid var(--border)}
+.bulk-item:last-child{border-bottom:none}
+.brow{display:grid;grid-template-columns:40px 1fr auto auto;align-items:center;gap:10px;padding:9px 14px}
+.bexp{padding:0 14px 12px;display:flex;flex-direction:column;gap:8px;background:rgba(0,0,0,.15)}
+.bstat{font-size:.7rem;font-weight:600;padding:3px 8px;border-radius:100px;white-space:nowrap}
+.bp{color:var(--muted);background:rgba(255,255,255,.05)}
+.bq{color:var(--warn);background:rgba(245,166,35,.12)}
+.bd{color:var(--ok);background:rgba(62,207,142,.12)}
+.be{color:var(--tt);background:rgba(255,0,80,.1)}
+
+/* ── Stats ── */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:18px 20px}
+.sv{font-family:'Syne',sans-serif;font-size:1.7rem;font-weight:800}
+.sl{font-size:.76rem;color:var(--muted);margin-top:3px}
+.ss{font-size:.72rem;color:var(--ok);margin-top:4px}
+
+/* ── Queue items ── */
+.q-item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)}
+.q-item:last-child{border-bottom:none}
+.status-pub{padding:3px 9px;border-radius:100px;font-size:.7rem;font-weight:600;background:rgba(62,207,142,.15);color:var(--ok)}
+.status-sched{padding:3px 9px;border-radius:100px;font-size:.7rem;font-weight:600;background:rgba(245,166,35,.15);color:var(--warn)}
+
+/* ── Account ── */
+.conn-row{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--border)}
+.conn-row:last-child{border-bottom:none}
+.cred-form{background:var(--s2);border:1px solid var(--border);border-radius:var(--rs);padding:15px;margin-top:11px;display:flex;flex-direction:column;gap:11px}
+.cred-form.hidden{display:none}
+.info-box{border-radius:var(--rs);padding:13px;font-size:.79rem;color:var(--muted);line-height:1.65;margin-top:12px}
+.info-tt{background:rgba(255,0,80,.06);border:1px solid rgba(255,0,80,.18)}
+.info-warn{background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.2)}
+.info-box code{color:var(--tt);font-size:.76rem}
+
+/* ── Toast ── */
+.toasts{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:7px;pointer-events:none}
+.toast{background:var(--s2);border:1px solid var(--border2);border-radius:var(--rs);padding:11px 15px;font-size:.83rem;display:flex;align-items:center;gap:9px;animation:su .22s ease;max-width:290px}
+@keyframes su{from{opacity:0;transform:translateY(8px)}}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:860px){.g2{grid-template-columns:1fr}}
+.sec{display:none}.sec.active{display:contents}
+</style>
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══ -->
+<aside>
+  <div class="logo"><div class="logo-icon">🎵</div>TikPublish</div>
+
+  <div class="nav-sec">Publish</div>
+  <button class="nav-item active" onclick="nav('publish',this)"><span class="nav-icon">⬆</span>Single Video</button>
+  <button class="nav-item" onclick="nav('bulk',this)"><span class="nav-icon">📦</span>Bulk Upload<span class="pill" id="bulk-badge" style="display:none">0</span></button>
+  <button class="nav-item" onclick="nav('queue',this)"><span class="nav-icon">⏱</span>Queue<span class="pill" id="q-badge">0</span></button>
+
+  <div class="nav-sec">Settings</div>
+  <button class="nav-item" onclick="nav('account',this)"><span class="nav-icon">🔗</span>TikTok Account</button>
+
+  <div class="acct-badge">
+    <div class="acct-av">K</div>
+    <div>
+      <div style="font-size:.8rem;font-weight:500">Kotbod</div>
+      <div style="font-size:.7rem;color:var(--muted)" id="sidebar-handle">Not connected</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ══ HEADER ══ -->
+<header>
+  <div>
+    <div class="htitle" id="ptitle">Single Video</div>
+    <div class="hsub" id="psub">Upload and publish to TikTok</div>
+  </div>
+  <div style="display:flex;gap:8px">
+    <button class="btn btn-s btn-sm" onclick="nav('account',document.querySelectorAll('.nav-item')[3])">🔗 Account</button>
+    <button class="btn btn-p btn-sm" id="hbtn" onclick="publishSingle()">⬆ Publish</button>
+  </div>
+</header>
+
+<!-- ══════════════════════════
+     SINGLE VIDEO
+══════════════════════════ -->
+<div id="sec-publish" class="sec active">
+<main>
+  <div class="g2">
+    <div style="display:flex;flex-direction:column;gap:18px">
+
+      <!-- File -->
+      <div class="panel">
+        <div class="ph"><span class="pt">📁 Video File</span></div>
+        <div class="pb">
+          <div id="sz" class="zone" ondragover="dov(event,this)" ondragleave="dol(this)" ondrop="sdrop(event)">
+            <input type="file" accept="video/*" onchange="sPick(event)"/>
+            <div style="font-size:2rem;margin-bottom:8px">🎬</div>
+            <div style="color:var(--muted);font-size:.9rem"><strong style="color:var(--tt)">Choose file</strong> or drag &amp; drop</div>
+            <div style="font-size:.73rem;color:var(--muted);margin-top:4px">MP4 · MOV · Max 4 GB · Up to 60 min</div>
+          </div>
+          <div id="sp" style="display:none;align-items:center;gap:11px;background:var(--s2);border-radius:var(--rs);padding:11px 13px">
+            <div style="font-size:1.5rem">🎬</div>
+            <div style="flex:1;min-width:0">
+              <div id="sfn" style="font-size:.83rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
+              <div id="sfm" style="font-size:.71rem;color:var(--muted);margin-top:1px"></div>
+            </div>
+            <button class="btn btn-d btn-sm" onclick="sClear()">✕ Remove</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Privacy -->
+      <div class="panel">
+        <div class="ph"><span class="pt">🔒 Privacy &amp; Options</span></div>
+        <div class="pb">
+          <div class="fg" style="margin-bottom:12px"><label class="L">Who can watch</label>
+            <select id="s-priv">
+              <option value="PUBLIC_TO_EVERYONE">🌐 Everyone</option>
+              <option value="MUTUAL_FOLLOW_FRIENDS">👥 Friends</option>
+              <option value="SELF_ONLY">🔒 Only Me</option>
+            </select></div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <label style="display:flex;align-items:center;gap:9px;cursor:pointer;font-size:.84rem">
+              <input type="checkbox" id="s-duet" checked style="accent-color:var(--tt);width:15px;height:15px"/> Allow Duets</label>
+            <label style="display:flex;align-items:center;gap:9px;cursor:pointer;font-size:.84rem">
+              <input type="checkbox" id="s-stitch" checked style="accent-color:var(--tt);width:15px;height:15px"/> Allow Stitches</label>
+            <label style="display:flex;align-items:center;gap:9px;cursor:pointer;font-size:.84rem">
+              <input type="checkbox" id="s-comment" checked style="accent-color:var(--tt);width:15px;height:15px"/> Allow Comments</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Schedule -->
+      <div class="panel">
+        <div class="ph"><span class="pt">🗓 Schedule</span></div>
+        <div class="pb">
+          <div style="display:flex;gap:6px;margin-bottom:12px">
+            <button class="btn btn-p btn-sm" id="tn" onclick="ssched('now')">Publish Now</button>
+            <button class="btn btn-s btn-sm" id="tl" onclick="ssched('later')">Schedule</button>
+          </div>
+          <div id="sdp" style="display:none">
+            <label class="L">Date &amp; Time (Dubai, GST+4)</label>
+            <input type="datetime-local" id="sdt"/>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:18px">
+
+      <!-- Details -->
+      <div class="panel">
+        <div class="ph">
+          <span class="pt">✏️ Caption &amp; Tags</span>
+          <button class="btn btn-s btn-sm" id="ai-btn" onclick="genAI()">✦ AI Write</button>
+        </div>
+        <div class="pb">
+          <div class="fg">
+            <label class="L">Caption <span style="float:right;font-weight:400" id="cap-count">0 / 2200</span></label>
+            <textarea id="s-cap" placeholder="Write your TikTok caption…" rows="5" oninput="$id('cap-count').textContent=this.value.length+' / 2200'"></textarea>
+          </div>
+          <div class="fg" style="margin-bottom:0">
+            <label class="L">Hashtags</label>
+            <input type="text" id="s-tags" placeholder="#fyp #viral #dubai  (comma separated)"/>
+          </div>
+          <div id="ai-load" style="display:none;margin-top:11px;background:rgba(255,0,80,.07);border:1px solid rgba(255,0,80,.2);border-radius:var(--rs);padding:9px 13px;font-size:.8rem;color:var(--tt);align-items:center;gap:9px">
+            <div class="spin"></div><span>AI writing your caption…</span></div>
+        </div>
+      </div>
+
+      <!-- Cover / Thumbnail -->
+      <div class="panel">
+        <div class="ph"><span class="pt">🖼 Cover Image</span></div>
+        <div class="pb">
+          <div class="zone" style="padding:20px" ondragover="dov(event,this)" ondragleave="dol(this)">
+            <input type="file" accept="image/*" onchange="tpick(event)"/>
+            <div style="font-size:1.4rem;margin-bottom:5px">🖼</div>
+            <div style="font-size:.82rem;color:var(--muted)"><strong style="color:var(--tt)">Upload cover</strong> · 1:1 or 9:16</div>
+          </div>
+          <img id="timg" style="display:none;width:100%;border-radius:var(--rs);margin-top:9px;max-height:120px;object-fit:cover"/>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- ══════════════════════════
+     BULK UPLOAD
+══════════════════════════ -->
+<div id="sec-bulk" class="sec">
+<main>
+
+  <div class="panel">
+    <div class="ph"><span class="pt">📦 Bulk Upload</span><span style="font-size:.76rem;color:var(--muted)" id="bcl">0 videos</span></div>
+    <div class="pb">
+      <div class="zone" id="bz" ondragover="dov(event,this)" ondragleave="dol(this)" ondrop="bdrop(event)" style="padding:28px">
+        <input type="file" accept="video/*" multiple onchange="bpick(event)"/>
+        <div style="font-size:1.9rem;margin-bottom:7px">📦</div>
+        <div style="color:var(--muted);font-size:.9rem"><strong style="color:var(--tt)">Choose videos</strong> or drag &amp; drop</div>
+        <div style="font-size:.73rem;color:var(--muted);margin-top:4px">Select 1–100+ at once · MP4, MOV · Add more any time</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="bsett" style="display:none">
+    <div class="ph">
+      <span class="pt">⚙ Bulk Settings</span>
+      <span style="font-size:.76rem;color:var(--muted)">Applied to all — override per video below</span>
+    </div>
+    <div class="pb">
+      <div class="g2">
+        <div>
+          <div class="fg" style="margin-bottom:12px"><label class="L">Who can watch</label>
+            <select id="b-priv">
+              <option value="PUBLIC_TO_EVERYONE">🌐 Everyone</option>
+              <option value="MUTUAL_FOLLOW_FRIENDS">👥 Friends</option>
+              <option value="SELF_ONLY">🔒 Only Me</option>
+            </select></div>
+          <div style="display:flex;flex-direction:column;gap:9px">
+            <label style="display:flex;align-items:center;gap:9px;cursor:pointer;font-size:.84rem">
+              <input type="checkbox" id="b-duet" checked style="accent-color:var(--tt);width:15px;height:15px"/> Allow Duets</label>
+            <label style="display:flex;align-items:center;gap:9px;cursor:pointer;font-size:.84rem">
+              <input type="checkbox" id="b-stitch" checked style="accent-color:var(--tt);width:15px;height:15px"/> Allow Stitches</label>
+          </div>
+        </div>
+        <div>
+          <div style="margin-bottom:11px"><label class="L">Schedule Mode</label>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <button class="btn btn-p btn-sm" id="btn" onclick="bsched('now')">Now</button>
+              <button class="btn btn-s btn-sm" id="bts" onclick="bsched('stagger')">Stagger</button>
+              <button class="btn btn-s btn-sm" id="btf" onclick="bsched('fixed')">Fixed Time</button>
+            </div></div>
+          <div id="bso" style="display:none">
+            <label class="L">Gap Between Videos</label>
+            <select id="bgap" style="margin-bottom:9px">
+              <option value="3600">Every 1 hour</option>
+              <option value="10800">Every 3 hours</option>
+              <option value="21600">Every 6 hours</option>
+              <option value="86400" selected>Every 1 day</option>
+              <option value="172800">Every 2 days</option>
+            </select>
+            <label class="L">First Publish At</label>
+            <input type="datetime-local" id="bst"/>
+          </div>
+          <div id="bfo" style="display:none">
+            <label class="L">Publish Date &amp; Time</label>
+            <input type="datetime-local" id="bft"/>
+          </div>
+          <div style="margin-top:11px">
+            <label class="L">Global Hashtags (added to all)</label>
+            <input type="text" id="bgt" placeholder="#fyp #viral"/>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:16px;display:flex;align-items:center;gap:9px;flex-wrap:wrap">
+        <button class="btn btn-s btn-sm" id="bai-btn" onclick="bulkAI()">✦ AI Captions for All</button>
+        <button class="btn btn-p" id="bpub-btn" onclick="bulkPublish()">⬆ Publish All (<span id="bpc">0</span>)</button>
+        <button class="btn btn-d btn-sm" onclick="clearBulk()">✕ Clear All</button>
+      </div>
+
+      <div id="bprog" style="display:none;margin-top:14px">
+        <div style="display:flex;justify-content:space-between;font-size:.76rem;color:var(--muted);margin-bottom:5px">
+          <span id="bpl">Publishing…</span><span id="bpp">0%</span>
+        </div>
+        <div class="pbar" style="height:5px"><div class="pfill" id="bpf" style="width:0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel" id="blist-panel" style="display:none">
+    <div class="ph">
+      <span class="pt">🎬 Video List</span>
+      <div style="display:flex;gap:7px;align-items:center">
+        <span style="font-size:.76rem;color:var(--muted)" id="bsl"></span>
+        <button class="btn btn-s btn-sm" onclick="allExp(true)">Expand All</button>
+        <button class="btn btn-s btn-sm" onclick="allExp(false)">Collapse</button>
+      </div>
+    </div>
+    <div id="blist"></div>
+  </div>
+
+</main>
+</div>
+
+<!-- ══════════════════════════
+     QUEUE
+══════════════════════════ -->
+<div id="sec-queue" class="sec">
+<main>
+  <div class="stats-row">
+    <div class="stat-card"><div class="sv" style="color:var(--warn)" id="qs-s">0</div><div class="sl">Scheduled</div><div class="ss" id="qs-sn">—</div></div>
+    <div class="stat-card"><div class="sv" style="color:var(--ok)" id="qs-p">0</div><div class="sl">Published</div><div class="ss" id="qs-pl">—</div></div>
+    <div class="stat-card"><div class="sv" style="color:var(--tt)" id="qs-t">0</div><div class="sl">Total</div><div class="ss">All TikToks</div></div>
+  </div>
+  <div class="panel">
+    <div class="ph"><span class="pt">⏱ All Videos</span></div>
+    <div class="pb" id="qlist">
+      <div style="text-align:center;padding:36px;color:var(--muted)"><div style="font-size:1.8rem;margin-bottom:9px">📭</div>Nothing published yet</div>
+    </div>
+  </div>
+</main>
+</div>
+
+<!-- ══════════════════════════
+     ACCOUNT
+══════════════════════════ -->
+<div id="sec-account" class="sec">
+<main>
+  <div class="panel">
+    <div class="ph">
+      <span class="pt">🎵 TikTok Account</span>
+      <div style="display:flex;gap:7px">
+        <button class="btn btn-s btn-sm" onclick="tog('tt-creds')">⚙ Set Token</button>
+        <button class="btn btn-p btn-sm" id="tt-btn" onclick="ttConnect()">Connect</button>
+      </div>
+    </div>
+    <div class="pb">
+      <div class="conn-row" style="padding-top:0;border-bottom:none">
+        <div style="font-size:1.5rem;width:32px;text-align:center">🎵</div>
+        <div style="flex:1">
+          <div style="font-size:.9rem;font-weight:600">TikTok</div>
+          <div id="tt-handle" style="font-size:.73rem;color:var(--muted);margin-top:1px">Not connected</div>
+        </div>
+        <div id="tt-dot" style="font-size:.73rem;color:var(--muted)">● Disconnected</div>
+      </div>
+
+      <div class="cred-form hidden" id="tt-creds">
+        <div style="font-size:.78rem;color:var(--muted);line-height:1.6">
+          Get an access token from the
+          <a href="https://developers.tiktok.com/tools/sandbox" target="_blank" style="color:var(--tt)">TikTok Developer Sandbox ↗</a>
+          or via the OAuth flow. Paste it below.
+        </div>
+        <div><label class="L">Access Token</label><input type="password" id="tt-tok" placeholder="Paste your TikTok access token…"/></div>
+        <div><label class="L">Your TikTok Username</label><input type="text" id="tt-usr" placeholder="@yourusername"/></div>
+        <div style="display:flex;gap:7px">
+          <button class="btn btn-p btn-sm" onclick="saveToken()">Save &amp; Connect</button>
+          <button class="btn btn-s btn-sm" onclick="tog('tt-creds')">Cancel</button>
+        </div>
+      </div>
+
+      <div class="info-box info-tt">
+        <strong style="color:var(--text)">How to get your access token:</strong><br><br>
+        1. Go to <code>developers.tiktok.com</code> → create an app<br>
+        2. Enable <strong>Content Posting API</strong> and <strong>Video Upload</strong> scopes<br>
+        3. Use the <strong>Sandbox</strong> to generate a test token, or complete the OAuth flow<br>
+        4. Paste the token above — TikPublish will use it to upload videos directly via the API
+      </div>
+
+      <div class="info-box info-warn" style="margin-top:10px">
+        ⚠ TikTok access tokens expire. If uploads start failing, come back here and refresh your token.
+      </div>
+    </div>
+  </div>
+</main>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script>
+// ══════════════════════════════════════
+// STATE
+// ══════════════════════════════════════
+const S = {
+  sf: null,
+  sm: 'now',
+  bm: 'now',
+  bf: [],
+  queue: [],
+  token: ls('tt_token'),
+  user:  ls('tt_user'),
+};
+
+function ls(k){ try{ return localStorage.getItem(k)||''; }catch{ return ''; } }
+function lss(k,v){ try{ localStorage.setItem(k,v); }catch{} }
+function lsd(k){ try{ localStorage.removeItem(k); }catch{} }
+function $id(id){ return document.getElementById(id); }
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtSz(b){ if(b<1048576) return (b/1024).toFixed(0)+' KB'; if(b<1073741824) return (b/1048576).toFixed(1)+' MB'; return (b/1073741824).toFixed(2)+' GB'; }
+function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+// ══════════════════════════════════════
+// NAV
+// ══════════════════════════════════════
+const PAGES = {
+  publish: ['Single Video',   'Upload and publish one video to TikTok'],
+  bulk:    ['Bulk Upload',    'Queue up 100+ videos and publish them all'],
+  queue:   ['Queue',          'Track all your published and scheduled videos'],
+  account: ['TikTok Account', 'Connect your TikTok via access token'],
+};
+function nav(name, btn){
+  document.querySelectorAll('.sec').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  $id('sec-'+name).classList.add('active');
+  btn.classList.add('active');
+  $id('ptitle').textContent = PAGES[name][0];
+  $id('psub').textContent   = PAGES[name][1];
+  const hb = $id('hbtn');
+  if(name==='publish'){ hb.style.display=''; hb.textContent='⬆ Publish'; hb.onclick=publishSingle; }
+  else if(name==='bulk'){ hb.style.display=''; hb.textContent='⬆ Publish All'; hb.onclick=bulkPublish; }
+  else hb.style.display='none';
+  if(name==='queue')   renderQ();
+  if(name==='account') refreshUI();
+}
+
+// ══════════════════════════════════════
+// DRAG HELPERS
+// ══════════════════════════════════════
+function dov(e,el){ e.preventDefault(); el.classList.add('over'); }
+function dol(el){ el.classList.remove('over'); }
+
+// ══════════════════════════════════════
+// SINGLE VIDEO
+// ══════════════════════════════════════
+function sPick(e){ const f=e.target.files[0]; if(f) setF(f); }
+function sdrop(e){ e.preventDefault(); dol($id('sz')); const f=e.dataTransfer.files[0]; if(f&&f.type.startsWith('video/')) setF(f); }
+function setF(f){
+  S.sf=f;
+  $id('sz').style.display='none';
+  $id('sp').style.display='flex';
+  $id('sfn').textContent=f.name;
+  $id('sfm').textContent=fmtSz(f.size)+' · '+(f.type||'video/mp4');
+  if(!$id('s-cap').value) $id('s-cap').value=f.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' ');
+}
+function sClear(){ S.sf=null; $id('sz').style.display=''; $id('sp').style.display='none'; }
+function tpick(e){ const f=e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=ev=>{const i=$id('timg');i.src=ev.target.result;i.style.display='block';}; r.readAsDataURL(f); }
+function ssched(m){ S.sm=m; $id('tn').className='btn btn-sm '+(m==='now'?'btn-p':'btn-s'); $id('tl').className='btn btn-sm '+(m==='later'?'btn-p':'btn-s'); $id('sdp').style.display=m==='later'?'block':'none'; }
+
+// ══════════════════════════════════════
+// AI CAPTION
+// ══════════════════════════════════════
+async function genAI(fname, callback){
+  const isSingle = !callback;
+  if(isSingle){
+    const btn=$id('ai-btn'), ld=$id('ai-load');
+    btn.disabled=true; ld.style.display='flex';
+    fname = S.sf ? S.sf.name.replace(/\.[^.]+$/,'') : 'my video';
+  }
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:600,
+        messages:[{role:'user', content:`You are a viral TikTok content strategist for a young creator in Dubai. Generate a caption and hashtags for a TikTok video named "${fname}". Return ONLY JSON, no markdown:\n{"caption":"engaging TikTok caption under 200 chars with 1-2 emojis","tags":["fyp","viral","tag3","tag4","tag5","tag6"]}`}]
+      })
+    });
+    const d = await res.json();
+    const p = JSON.parse((d.content?.[0]?.text||'{}').replace(/```json|```/g,'').trim());
+    if(isSingle){
+      if(p.caption) { $id('s-cap').value=p.caption; $id('cap-count').textContent=p.caption.length+' / 2200'; }
+      if(p.tags) $id('s-tags').value=p.tags.map(t=>'#'+t.replace(/^#/,'')).join(' ');
+      toast('✦ Caption written!');
+    } else {
+      callback(p);
+    }
+  }catch(e){
+    if(isSingle) toast('⚠ AI error');
+    else callback({});
+  }
+  if(isSingle){ $id('ai-btn').disabled=false; $id('ai-load').style.display='none'; }
+}
+
+// ══════════════════════════════════════
+// TIKTOK UPLOAD
+// ══════════════════════════════════════
+async function uploadToTikTok(file, meta){
+  if(!S.token) throw new Error('Not connected — add your token in Account settings');
+
+  // Init upload
+  const initRes = await fetch('https://open.tiktokapis.com/v2/post/publish/video/init/',{
+    method:'POST',
+    headers:{'Authorization':'Bearer '+S.token,'Content-Type':'application/json'},
+    body: JSON.stringify({
+      post_info:{
+        title: (meta.caption||'').slice(0,150) || file.name,
+        privacy_level: meta.privacy||'PUBLIC_TO_EVERYONE',
+        disable_duet:  !(meta.duet  !== false),
+        disable_stitch:!(meta.stitch!== false),
+        disable_comment:!(meta.comment!==false),
+      },
+      source_info:{ source:'FILE_UPLOAD', video_size:file.size, chunk_size:file.size, total_chunk_count:1 }
+    })
+  });
+
+  if(!initRes.ok){
+    const err=await initRes.json().catch(()=>({}));
+    throw new Error(err.error?.message||'TikTok init failed ('+initRes.status+')');
+  }
+  const initData = await initRes.json();
+  const uploadUrl = initData.data?.upload_url;
+  if(!uploadUrl) throw new Error('No upload URL from TikTok');
+
+  // Upload file
+  const upRes = await fetch(uploadUrl,{
+    method:'PUT',
+    headers:{'Content-Range':`bytes 0-${file.size-1}/${file.size}`,'Content-Type':'video/mp4'},
+    body: file,
+  });
+  if(!upRes.ok) throw new Error('File upload failed ('+upRes.status+')');
+
+  return { publishId: initData.data?.publish_id };
+}
+
+// ══════════════════════════════════════
+// PUBLISH SINGLE
+// ══════════════════════════════════════
+async function publishSingle(){
+  if(!S.sf){ toast('⚠ Upload a video first'); return; }
+  const cap = $id('s-cap').value.trim();
+  if(!cap){ toast('⚠ Write a caption first'); return; }
+
+  const btn=$id('hbtn');
+  btn.disabled=true; btn.innerHTML='<div class="spin"></div> Publishing…';
+
+  const tags = $id('s-tags').value.split(',').map(t=>t.trim()).filter(Boolean).join(' ');
+  const meta = {
+    caption: cap + (tags?' '+tags:''),
+    privacy:  $id('s-priv').value,
+    duet:     $id('s-duet').checked,
+    stitch:   $id('s-stitch').checked,
+    comment:  $id('s-comment').checked,
+  };
+
+  try{
+    await uploadToTikTok(S.sf, meta);
+    toast('✓ Published to TikTok!');
+    S.queue.unshift({title:cap.slice(0,60), status:S.sm==='now'?'published':'scheduled', time:S.sm==='now'?'Just now':$id('sdt').value||'Scheduled'});
+    updateQBadge();
+    sClear(); $id('s-cap').value=''; $id('s-tags').value=''; $id('cap-count').textContent='0 / 2200';
+  }catch(err){
+    toast('⚠ '+err.message);
+  }
+
+  btn.disabled=false; btn.innerHTML='⬆ Publish';
+}
+
+// ══════════════════════════════════════
+// BULK
+// ══════════════════════════════════════
+function bpick(e){ addBF(Array.from(e.target.files)); }
+function bdrop(e){ e.preventDefault(); dol($id('bz')); addBF(Array.from(e.dataTransfer.files).filter(f=>f.type.startsWith('video/'))); }
+function addBF(files){
+  files.forEach(f=>{
+    if(!S.bf.find(b=>b.file.name===f.name&&b.file.size===f.size))
+      S.bf.push({file:f, caption:f.name.replace(/\.[^.]+$/,'').replace(/[-_]/g,' '), tags:'', status:'pending', exp:false});
+  });
+  refreshBulk();
+}
+function refreshBulk(){
+  const n=S.bf.length;
+  $id('bcl').textContent=n+' video'+(n!==1?'s':'');
+  $id('bpc').textContent=n;
+  const bb=$id('bulk-badge'); bb.style.display=n?'':'none'; bb.textContent=n;
+  $id('bsett').style.display=n?'':'none';
+  $id('blist-panel').style.display=n?'':'none';
+  $id('bsl').textContent=n+' video'+(n!==1?'s':'');
+  renderBL();
+}
+function renderBL(){
+  $id('blist').innerHTML = S.bf.map((item,i)=>`
+    <div class="bulk-item" id="bi-${i}">
+      <div class="brow">
+        <div style="width:40px;height:28px;background:var(--s2);border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0">🎬</div>
+        <div style="min-width:0">
+          <div style="font-size:.82rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(item.caption)}</div>
+          <div style="font-size:.7rem;color:var(--muted)">${fmtSz(item.file.size)}</div>
+        </div>
+        <span class="bstat b${item.status[0]}">${{pending:'○ Pending',queued:'↑ Uploading',done:'✓ Done',error:'✕ Error'}[item.status]}</span>
+        <div style="display:flex;gap:5px">
+          <button class="btn btn-s btn-sm" onclick="exp(${i})">${item.exp?'▲':'▼'}</button>
+          <button class="btn btn-d btn-sm" onclick="rmB(${i})">✕</button>
+        </div>
+      </div>
+      ${item.exp?`<div class="bexp">
+        <div><label class="L">Caption</label><textarea rows="2" oninput="S.bf[${i}].caption=this.value" style="background:var(--s3)">${esc(item.caption)}</textarea></div>
+        <div><label class="L">Hashtags</label><input type="text" value="${esc(item.tags)}" placeholder="#fyp #viral…" oninput="S.bf[${i}].tags=this.value" style="background:var(--s3)"/></div>
+      </div>`:''}
+    </div>`).join('');
+}
+function exp(i){ S.bf[i].exp=!S.bf[i].exp; renderBL(); }
+function allExp(v){ S.bf.forEach(b=>b.exp=v); renderBL(); }
+function rmB(i){ S.bf.splice(i,1); refreshBulk(); }
+function clearBulk(){ S.bf=[]; refreshBulk(); }
+function bsched(m){
+  S.bm=m;
+  ['now','stagger','fixed'].forEach(x=>$id('bt'+x[0]).className='btn btn-sm '+(x===m?'btn-p':'btn-s'));
+  $id('bso').style.display=m==='stagger'?'block':'none';
+  $id('bfo').style.display=m==='fixed'?'block':'none';
+}
+async function bulkAI(){
+  if(!S.bf.length){ toast('⚠ No videos'); return; }
+  const btn=$id('bai-btn'); btn.disabled=true; btn.innerHTML='<div class="spin"></div> Generating…';
+  for(let i=0;i<S.bf.length;i++){
+    const fname=S.bf[i].file.name.replace(/\.[^.]+$/,'');
+    await genAI(fname, p=>{
+      if(p.caption) S.bf[i].caption=p.caption;
+      if(p.tags)    S.bf[i].tags=p.tags.map(t=>'#'+t.replace(/^#/,'')).join(' ');
+    });
+    $id('bsl').textContent=`AI: ${i+1}/${S.bf.length}…`;
+    renderBL(); await sleep(150);
+  }
+  $id('bsl').textContent=S.bf.length+' videos';
+  btn.disabled=false; btn.innerHTML='✦ AI Captions for All';
+  toast('✦ All captions done!');
+}
+async function bulkPublish(){
+  if(!S.bf.length){ toast('⚠ No videos'); return; }
+  const btn=$id('bpub-btn'); btn.disabled=true;
+  const prog=$id('bprog'), fill=$id('bpf'), label=$id('bpl'), pct=$id('bpp');
+  prog.style.display='block';
+  const gt=$id('bgt').value;
+  for(let i=0;i<S.bf.length;i++){
+    const item=S.bf[i];
+    item.status='queued'; renderBL();
+    label.textContent=`"${item.caption.slice(0,30)}…" (${i+1}/${S.bf.length})`;
+    fill.style.width=Math.round((i/S.bf.length)*100)+'%';
+    pct.textContent=Math.round((i/S.bf.length)*100)+'%';
+    const tags=[item.tags,gt].filter(Boolean).join(' ');
+    try{
+      await uploadToTikTok(item.file,{
+        caption: item.caption+(tags?' '+tags:''),
+        privacy:  $id('b-priv').value,
+        duet:     $id('b-duet').checked,
+        stitch:   $id('b-stitch').checked,
+      });
+      item.status='done';
+      S.queue.unshift({title:item.caption.slice(0,60),status:S.bm==='now'?'published':'scheduled',time:S.bm==='now'?new Date().toLocaleTimeString():'Scheduled'});
+    }catch(err){
+      item.status='error'; toast('⚠ '+item.caption.slice(0,20)+': '+err.message);
+    }
+    renderBL();
+  }
+  fill.style.width='100%'; pct.textContent='100%';
+  label.textContent=`✓ Done!`;
+  updateQBadge(); btn.disabled=false;
+  toast(`✓ Bulk publish complete!`);
+}
+
+// ══════════════════════════════════════
+// QUEUE
+// ══════════════════════════════════════
+function renderQ(){
+  const sc=S.queue.filter(q=>q.status==='scheduled');
+  const pb=S.queue.filter(q=>q.status==='published');
+  $id('qs-s').textContent=sc.length;
+  $id('qs-p').textContent=pb.length;
+  $id('qs-t').textContent=S.queue.length;
+  $id('qs-sn').textContent=sc.length?'Next: '+sc[0].time:'None scheduled';
+  $id('qs-pl').textContent=pb.length?pb[0].time:'—';
+  const list=$id('qlist');
+  if(!S.queue.length){ list.innerHTML='<div style="text-align:center;padding:36px;color:var(--muted)"><div style="font-size:1.8rem;margin-bottom:9px">📭</div>Nothing yet</div>'; return; }
+  list.innerHTML=S.queue.map(item=>`
+    <div class="q-item">
+      <div style="width:42px;height:28px;background:var(--s2);border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0">🎬</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:.83rem;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(item.title)}</div>
+        <div style="font-size:.7rem;color:var(--muted);margin-top:1px">${item.time}</div>
+      </div>
+      <span style="font-size:.68rem;background:rgba(255,0,80,.15);color:var(--tt);border-radius:100px;padding:2px 8px;margin-right:8px">TikTok</span>
+      <span class="${item.status==='published'?'status-pub':'status-sched'}">${item.status==='published'?'✓ Published':'🕑 Scheduled'}</span>
+    </div>`).join('');
+}
+function updateQBadge(){ $id('q-badge').textContent=S.queue.filter(q=>q.status==='scheduled').length; }
+
+// ══════════════════════════════════════
+// ACCOUNT
+// ══════════════════════════════════════
+function tog(id){ $id(id).classList.toggle('hidden'); }
+function saveToken(){
+  const tok=$id('tt-tok').value.trim();
+  const usr=$id('tt-usr').value.trim()||'TikTok Account';
+  if(!tok){ toast('⚠ Paste your access token'); return; }
+  S.token=tok; S.user=usr;
+  lss('tt_token',tok); lss('tt_user',usr);
+  tog('tt-creds'); refreshUI();
+  toast('✓ Connected as '+usr+'!');
+}
+function ttConnect(){
+  if(S.token){ S.token=''; S.user=''; lsd('tt_token'); lsd('tt_user'); refreshUI(); toast('🔌 Disconnected'); }
+  else tog('tt-creds');
+}
+function refreshUI(){
+  if(S.token){
+    $id('tt-handle').textContent=(S.user||'Connected')+' ✓'; $id('tt-handle').style.color='var(--ok)';
+    $id('tt-dot').textContent='● Connected'; $id('tt-dot').style.color='var(--ok)';
+    $id('tt-btn').textContent='Disconnect'; $id('tt-btn').className='btn btn-d btn-sm';
+    $id('sidebar-handle').textContent=S.user||'Connected';
+    if(S.token) $id('tt-tok').value=S.token;
+    if(S.user)  $id('tt-usr').value=S.user;
+  }else{
+    $id('tt-handle').textContent='Not connected'; $id('tt-handle').style.color='var(--muted)';
+    $id('tt-dot').textContent='● Disconnected'; $id('tt-dot').style.color='var(--muted)';
+    $id('tt-btn').textContent='Connect'; $id('tt-btn').className='btn btn-p btn-sm';
+    $id('sidebar-handle').textContent='Not connected';
+  }
+}
+
+// ══════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════
+function toast(msg){
+  const c=$id('toasts');
+  const el=document.createElement('div'); el.className='toast'; el.textContent=msg;
+  c.appendChild(el); setTimeout(()=>el.remove(),4000);
+}
+
+// ══════════════════════════════════════
+// INIT
+// ══════════════════════════════════════
+const dt=new Date(); dt.setDate(dt.getDate()+1); dt.setHours(9,0,0,0);
+const dts=dt.toISOString().slice(0,16);
+['sdt','bst','bft'].forEach(id=>{ const el=$id(id); if(el) el.value=dts; });
+refreshUI();
+</script>
+</body>
+</html>
