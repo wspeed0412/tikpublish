@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Privacy Policy — TikPublish</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0a0a0f;--surface:#111118;--border:rgba(255,255,255,0.07);--tt:#ff0050;--text:#f0eeff;--muted:rgba(240,238,255,0.5)}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;padding:0}
+a{color:var(--tt);text-decoration:none}a:hover{text-decoration:underline}
+
+nav{background:var(--surface);border-bottom:1px solid var(--border);padding:18px 40px;display:flex;align-items:center;justify-content:space-between}
+.logo{font-family:'Syne',sans-serif;font-weight:800;font-size:1.2rem;display:flex;align-items:center;gap:10px}
+.logo-dot{width:26px;height:26px;background:var(--tt);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:.85rem}
+.nav-links{display:flex;gap:24px;font-size:.85rem;color:var(--muted)}
+.nav-links a{color:var(--muted)}.nav-links a:hover{color:var(--text)}
+
+.hero{text-align:center;padding:72px 40px 48px;border-bottom:1px solid var(--border)}
+.hero-label{font-size:.75rem;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--tt);margin-bottom:16px}
+.hero h1{font-family:'Syne',sans-serif;font-size:2.4rem;font-weight:800;letter-spacing:-1px;margin-bottom:12px}
+.hero p{font-size:.9rem;color:var(--muted)}
+
+.container{max-width:720px;margin:0 auto;padding:56px 40px 100px}
+
+.section{margin-bottom:44px}
+.section h2{font-family:'Syne',sans-serif;font-size:1.05rem;font-weight:700;color:var(--text);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border)}
+.section p{font-size:.9rem;color:var(--muted);line-height:1.8;margin-bottom:12px}
+.section p:last-child{margin-bottom:0}
+.section ul{padding-left:20px;display:flex;flex-direction:column;gap:8px}
+.section ul li{font-size:.9rem;color:var(--muted);line-height:1.7}
+
+.highlight{background:rgba(255,0,80,.07);border:1px solid rgba(255,0,80,.18);border-radius:10px;padding:16px 20px;margin-bottom:36px}
+.highlight p{font-size:.88rem;color:var(--text) !important;line-height:1.7;margin:0 !important}
+
+footer{background:var(--surface);border-top:1px solid var(--border);padding:28px 40px;text-align:center;font-size:.8rem;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo"><div class="logo-dot">🎵</div>TikPublish</div>
+  <div class="nav-links">
+    <a href="./terms">Terms</a>
+    <a href="./privacy">Privacy</a>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-label">Legal</div>
+  <h1>Privacy Policy</h1>
+  <p>Last updated: April 2026</p>
+</div>
+
+<div class="container">
+
+  <div class="highlight">
+    <p>🔒 <strong>Short version:</strong> TikPublish runs entirely on your own computer. We do not collect, store, or transmit any of your personal data to any server we control. Your TikTok credentials stay on your machine.</p>
+  </div>
+
+  <div class="section">
+    <h2>1. Who We Are</h2>
+    <p>TikPublish is a personal desktop application for individual content creators. It is developed and maintained by Aaryaman Kotwal. If you have any privacy-related questions, contact us at <a href="mailto:aaryamankotwal@gmail.com">aaryamankotwal@gmail.com</a>.</p>
+  </div>
+
+  <div class="section">
+    <h2>2. Information We Collect</h2>
+    <p>TikPublish does not collect any personal information. The application runs locally on your computer and has no connection to any TikPublish-operated server or database.</p>
+    <p>The following data is stored <strong>locally on your device only</strong>:</p>
+    <ul>
+      <li>Your TikTok OAuth access token and refresh token (stored in a local <code>.token</code> file)</li>
+      <li>Your TikTok Client Key and Client Secret (stored in your local <code>.env</code> file)</li>
+      <li>Your TikTok display name, used only to show your connected account in the app interface</li>
+    </ul>
+    <p>None of this information is sent to us or any third party other than TikTok's own API servers.</p>
+  </div>
+
+  <div class="section">
+    <h2>3. How We Use Your Information</h2>
+    <p>Because we do not collect your data, we do not use it. All API calls made by TikPublish go directly from your computer to TikTok's servers using your own credentials. TikPublish acts purely as a local interface.</p>
+  </div>
+
+  <div class="section">
+    <h2>4. TikTok's Data Practices</h2>
+    <p>When you connect TikPublish to TikTok, TikTok may collect data about your usage in accordance with their own Privacy Policy. We encourage you to review <a href="https://www.tiktok.com/legal/page/global/privacy-policy/en" target="_blank">TikTok's Privacy Policy</a> to understand how they handle your data.</p>
+  </div>
+
+  <div class="section">
+    <h2>5. Data Sharing</h2>
+    <p>We do not share, sell, rent, or trade any of your information with any third parties. There is no information to share — it never leaves your device.</p>
+  </div>
+
+  <div class="section">
+    <h2>6. Data Security</h2>
+    <p>Your credentials are stored in plain text files on your local machine (<code>.env</code> and <code>.token</code>). You are responsible for keeping these files secure. We recommend not sharing your TikPublish folder with others and adding these files to <code>.gitignore</code> if you use version control.</p>
+  </div>
+
+  <div class="section">
+    <h2>7. Children's Privacy</h2>
+    <p>TikPublish is not intended for use by anyone under the age of 13. We do not knowingly collect any information from children.</p>
+  </div>
+
+  <div class="section">
+    <h2>8. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy occasionally. Any changes will be reflected by the updated date at the top of this page. Continued use of TikPublish after changes constitutes acceptance of the updated policy.</p>
+  </div>
+
+  <div class="section">
+    <h2>9. Contact</h2>
+    <p>If you have any questions or concerns about this Privacy Policy, please contact us at <a href="mailto:aaryamankotwal@gmail.com">aaryamankotwal@gmail.com</a>.</p>
+  </div>
+
+</div>
+
+<footer>
+  © 2026 TikPublish · <a href="./terms">Terms</a> · <a href="./privacy">Privacy</a>
+</footer>
+
+</body>
+</html>
