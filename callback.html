@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>TikPublish — Connecting…</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,sans-serif;background:#0a0a0f;color:#f0eeff;display:flex;align-items:center;justify-content:center;height:100vh;flex-direction:column;gap:16px}
+.icon{font-size:2.5rem}
+.msg{font-size:1rem;color:rgba(240,238,255,0.6)}
+.status{font-size:1.1rem;font-weight:600}
+</style>
+</head>
+<body>
+<div class="icon" id="icon">⏳</div>
+<div class="status" id="status">Connecting to TikPublish…</div>
+<div class="msg" id="msg">Sending your login to the local server</div>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const code   = params.get('code');
+const state  = params.get('state');
+const error  = params.get('error');
+
+async function finish(){
+  if(error){
+    document.getElementById('icon').textContent = '❌';
+    document.getElementById('status').textContent = 'Auth failed: ' + error;
+    document.getElementById('msg').textContent = 'Close this tab and try again.';
+    return;
+  }
+
+  if(!code){
+    document.getElementById('icon').textContent = '❌';
+    document.getElementById('status').textContent = 'No code received';
+    document.getElementById('msg').textContent = 'Close this tab and try again.';
+    return;
+  }
+
+  // Forward the code to your local TikPublish server
+  try {
+    const res = await fetch('http://localhost:3000/oauth/callback?code='+encodeURIComponent(code)+'&state='+encodeURIComponent(state||''), {
+      method: 'GET',
+      mode: 'no-cors', // local server, just fire and forget
+    });
+  } catch {}
+
+  // Also try posting via a redirect
+  window.location.href = 'http://localhost:3000/oauth/callback?code='+encodeURIComponent(code)+'&state='+encodeURIComponent(state||'');
+}
+
+finish();
+</script>
+</body>
+</html>
